@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Filter Students</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f8f9fa; padding: 20px; }
+        .container { background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); max-width: 1000px; margin: auto; }
+        h1 { text-align: center; color: #2c3e50; margin-bottom: 20px; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        form { margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap; align-items: center; }
+        select, button { padding: 8px 12px; border-radius: 4px; border: 1px solid #ccc; }
+        button { background-color: #3498db; color: white; border: none; cursor: pointer; }
+        button:hover { background-color: #2980b9; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 25px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #3498db; color: white; }
+        tr:hover { background-color: #f1f9ff; }
+        .delete-btn { background-color: #e74c3c; color: white; border: none; padding: 8px 14px; border-radius: 4px; cursor: pointer; }
+        .delete-btn:hover { background-color: #c0392b; }
+        .no-data { text-align: center; color: #7f8c8d; padding: 15px; font-style: italic; }
+        .error-message { background-color: #e74c3c; color: white; padding: 10px; border-radius: 4px; margin-bottom: 20px; }
+        .success-message { background-color: #2ecc71; color: white; padding: 10px; border-radius: 4px; margin-bottom: 20px; }
+        .back-link a { text-decoration: none; color: #3498db; font-weight: 500; }
+        .back-link a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Filter Students by Academic Year and Department</h1>
+    <div class="back-link">
+        <a href="{% url 'home' %}">⬅ Back to Dashboard</a>
+    </div>
+
+    {% if error %}
+        <div class="error-message">{{ error }}</div>
+    {% endif %}
+
+    {% if success_message %}
+        <div class="success-message">{{ success_message }}</div>
+    {% endif %}
+
+    <!-- ✅ Filter Form -->
+    <form method="GET" id="filterForm">
+        <select name="academic_year" id="academic_year">
+            <option value="">All Years</option>
+            {% for year in academic_years %}
+                <option value="{{ year }}" {% if year|stringformat:"s" == selected_year %}selected{% endif %}>{{ year }}</option>
+            {% endfor %}
+        </select>
+
+        <select name="department" id="department">
+            <option value="">All Departments</option>
+            {% for dept in departments %}
+                <option value="{{ dept }}" {% if dept == selected_department %}selected{% endif %}>{{ dept }}</option>
+            {% endfor %}
+        </select>
+
+        <button type="submit">Filter</button>
+    </form>
+
+    <!-- ✅ Delete Form moved OUTSIDE the filter form -->
+    {% if selected_department and selected_year %}
+    <form method="POST" style="display:inline;" onsubmit="return confirmDelete();">
+        {% csrf_token %}
+        <input type="hidden" name="department_to_delete" value="{{ selected_department }}">
+        <input type="hidden" name="year_to_delete" value="{{ selected_year }}">
+        <button type="submit" class="delete-btn">
+            Delete Department ({{ selected_department }} - {{ selected_year }})
+        </button>
+    </form>
+    {% endif %}
+
+    {% if students %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Roll Number</th>
+                    <th>Name</th>
+                    <th>Class</th>
+                    <th>Academic Year</th>
+                    <th>Department</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr>
+                    <td>{{ student.roll_number }}</td>
+                    <td>{{ student.name }}</td>
+                    <td>{{ student.student_class|default:"-" }}</td>
+                    <td>{{ student.academic_year }}</td>
+                    <td>{{ student.department }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="no-data">No students found for the selected filters.</p>
+    {% endif %}
+</div>
+
+<script>
+function confirmDelete() {
+    return confirm("Are you sure you want to delete all students from this department and academic year?");
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Student Upload Portal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f6f9;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: linear-gradient(90deg, #2563eb, #4338ca);
+      color: white;
+      text-align: center;
+      padding: 50px 20px;
+    }
+    header h1 { font-size: 2.5rem; margin: 0; }
+    header p { margin-top: 10px; color: #dbeafe; }
+    nav {
+      background: white;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    nav h2 { margin: 0; color: #1e40af; }
+    nav a {
+      text-decoration: none;
+      background: #2563eb;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 5px;
+      transition: background 0.3s;
+    }
+    nav a:hover { background: #1e3a8a; }
+    .message {
+      display: none;
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 3000;
+      background: #e0f2fe;
+      color: #0c4a6e;
+      padding: 16px 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+      font-size: 1.1rem;
+      min-width: 200px;
+      text-align: center;
+      font-weight: 500;
+    }
+    .message.success {
+      background: #dcfce7;
+      color: #166534;
+      border: 1px solid #166534;
+    }
+    .message.warning {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #991b1b;
+    }
+    main {
+      max-width: 900px;
+      margin: 50px auto;
+      padding: 0 20px;
+    }
+    .section-title {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .section-title h2 {
+      font-size: 2rem;
+      color: #1e3a8a;
+    }
+    .section-title p {
+      color: #555;
+      font-size: 1rem;
+    }
+    .card {
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      margin-bottom: 40px;
+    }
+    .card h3 {
+      color: #1e40af;
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      font-size: 0.9rem;
+      color: #555;
+      margin-bottom: 4px;
+    }
+    input[type="text"], input[type="file"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      margin-bottom: 12px;
+      transition: border 0.3s;
+    }
+    input:focus {
+      border-color: #2563eb;
+      outline: none;
+    }
+    button {
+      background: #2563eb;
+      color: white;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.3s;
+    }
+    button:hover { background: #1e3a8a; }
+    .btn-danger { background: #dc2626; }
+    .btn-danger:hover { background: #991b1b; }
+    .info-box {
+      background: #f1f5f9;
+      padding: 10px;
+      border-left: 4px solid #2563eb;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      margin-top: 10px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 15px;
+    }
+    th, td {
+      text-align: left;
+      border: 1px solid #ddd;
+      padding: 10px;
+      font-size: 0.95rem;
+    }
+    th {
+      background: #f3f4f6;
+      color: #1e3a8a;
+    }
+    tr:hover { background: #f9fafb; }
+    footer {
+      background: white;
+      border-top: 1px solid #ddd;
+      text-align: center;
+      color: #555;
+      padding: 15px;
+      margin-top: 50px;
+      font-size: 0.9rem;
+    }
+    @media (max-width: 700px) {
+      .card { padding: 20px; }
+      nav { flex-direction: column; align-items: flex-start; }
+      header h1 { font-size: 2rem; }
+      .section-title h2 { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav>
+    <h2>Seat Arranger</h2>
+    <a href="{% url 'logout' %}">Logout</a>
+  </nav>
+
+  <!-- Message popup -->
+  <div id="pop-message" class="message"></div>
+
+  <!-- Header -->
+  <header>
+    <h1>Student Upload Portal</h1>
+    <p>Upload or add students for seat arrangement</p>
+  </header>
+<div class="back-link">
+        <a href="{% url 'home' %}">⬅ Back to Dashboard</a>
+    </div>
+  <main>
+    <div class="section-title">
+      
+      <p>Upload a CSV file or enter student details manually below.</p>
+    </div>
+
+    <!-- CSV Upload -->
+    <div class="card">
+      <h3>Upload via CSV</h3>
+      <form id="uploadForm" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label>Choose CSV or TSV file</label>
+        {{ form.file }}
+        <button type="submit" name="upload_csv">Upload</button>
+      </form>
+      <div class="info-box">
+        <p><strong>Required headers:</strong> roll_number, student_name</p>
+        <p><strong>Optional:</strong> department, student_class, academic_year</p>
+      </div>
+    </div>
+
+    <!-- Manual Entry -->
+    <div class="card">
+      <h3>Add Student Manually</h3>
+      <form id="manualForm" method="post" action="{% url 'add_student_manual' %}">
+        {% csrf_token %}
+        <input type="text" name="roll_number" placeholder="Roll Number" required>
+        <input type="text" name="name" placeholder="Name" required>
+        <input type="text" name="department" placeholder="Department">
+        <input type="text" name="student_class" placeholder="Class">
+        <input type="text" name="academic_year" placeholder="Academic Year (e.g. 2024-25)">
+        <button type="submit">Add Student</button>
+      </form>
+      <form id="resetForm" method="post" action="{% url 'reset_students_db' %}" onsubmit="return showResetMessage(event);" style="margin-top: 15px;">
+        {% csrf_token %}
+        <button type="submit" class="btn-danger">Reset Database</button>
+      </form>
+    </div>
+
+    
+  </main>
+
+ 
+
+  <!-- Popup Message Script -->
+  <script>
+    function showMessage(msg, type='success') {
+      var box = document.getElementById('pop-message');
+      box.className = 'message ' + type;
+      box.textContent = msg;
+      box.style.display = 'block';
+      // Popup stays visible 6 seconds
+      setTimeout(() => { box.style.display = 'none'; }, 6000);
+    }
+
+    // CSV Upload demo: Show message on submit (remove for actual backend)
+    document.getElementById('uploadForm').addEventListener('submit', function(e){
+      showMessage('CSV file upload initiated!', 'success');
+      // Uncomment next: e.preventDefault(); if you want demo only, not actual submission
+    });
+
+    // Manual Add: Show popup message on add
+    document.getElementById('manualForm').addEventListener('submit', function(e){
+      showMessage('Manual student add request submitted!', 'success');
+      // Uncomment next: e.preventDefault(); if you want demo only, not actual submission
+    });
+
+    // Database Reset: Show message and confirm
+    function showResetMessage(event) {
+      if (confirm('Are you sure you want to reset database?')) {
+        showMessage('Database reset requested!', 'warning');
+      } else {
+        event.preventDefault();
+      }
+      // Form proceeds if confirmed
+    }
+  </script>
+</body>
+</html>
